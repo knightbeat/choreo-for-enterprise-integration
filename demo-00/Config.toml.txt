@@ -1,0 +1,10 @@
+[sfConfig]
+baseUrl = ""
+token = ""
+
+[dbConfigContacts]
+host = ""
+port = 0
+user = "root"
+password = "root"
+database = "choreobase"

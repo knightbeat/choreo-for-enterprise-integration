@@ -1,0 +1,69 @@
+
+###
+@sf_user=chathura@demoteam.com
+@sf_password=zk1853HSb
+@sf_client_id=3MVG9DREgiBqN9Wlh1HoYTn9kLXEGF4rjPk3Mi._9Cs9vCAjQoPGtz8JrgFND3PtBsVSM7wksWb9Py46tKiXS
+@sf_client_secret=CE1BF2CFB5ABECC9E8962037F50685972C203EE3EBAAC46D660CBC6C999C3025
+
+# @name createToken
+POST https://login.salesforce.com/services/oauth2/token 
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{sf_client_id}}&client_secret={{sf_client_secret}}&username={{sf_user}}&password={{sf_password}}
+
+###
+@sf_token={{createToken.response.body.access_token}}
+@sf_instance_url={{createToken.response.body.instance_url}}
+
+### Salesforce API version
+GET {{sf_instance_url}}/services/data
+Authorization: Bearer {{sf_token}}
+
+###
+
+@sf_api_version=56.0
+
+# @name createAccount
+POST {{sf_instance_url}}/services/data/v56.0/sobjects/Account
+Content-Type: application/json
+Authorization: Bearer {{sf_token}}
+
+{
+    "Name":"WSO2 Choreo Demo"
+}
+
+###
+
+@sf_account_id={{createAccount.response.body.$.id}}
+
+POST {{sf_instance_url}}/services/data/v56.0/sobjects/Contact
+Content-Type: application/json
+Authorization: Bearer {{sf_token}}
+
+{
+    "FirstName": "Jessy",
+    "LastName": "Pinkman",
+    "AccountId": "{{sf_account_id}}",
+    "Title": "Mr",
+    "Email": "jessey@demoteam.com",
+    "Phone": "+447428254632"
+}
+
+###
+
+GET {{sf_instance_url}}/services/data/v56.0/sobjects/Contact
+Authorization: Bearer {{sf_token}}
+
+###
+
+
+###
+
+###
+POST http://localhost:9090/contacts
+Content-Type: application/json
+
+{
+    "email": "max@demoteam.com",
+    "account": "0018d00000PMp4MAAT"
+}
