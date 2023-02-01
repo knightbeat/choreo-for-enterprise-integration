@@ -22,15 +22,6 @@ type SalesforceConfig record {|
 configurable SalesforceConfig sfConfig = ?;
 configurable DatabaseConfig dbConfigContacts = ?;
 
-// configurable string SF_BASE_URL = "https://demoteam-dev-ed.my.salesforce.com";
-// configurable string SF_TOKEN = "00D8d000001GOWT!AQcAQGTs2sSZrRSqN5zs2C3FRCNlCCl.fLx2cSS0HKoTGbvf4xO3VHN_DW.rPhn5qlTcTnK4uzVXrUpoSHfXtnsUFX_c6YDL";
-
-//configurable string DB_HOST = contactsdb.host;
-// configurable int DB_PORT = 13928;
-// configurable string DB_USER = "root";
-// configurable string DB_PASSWORD = "rootWso2123";
-// configurable string DB_NAME = "choreobase";
-
 type Contact record {
     readonly string contact_id;
     string title;
@@ -99,7 +90,7 @@ function transform(SalesforceContactsResponse salesforceContactsResponse) return
     numberOfContacts: salesforceContactsResponse.totalSize,
     contacts: from var salesforceContactsResponseItem in salesforceContactsResponse.records
         select {
-            fullName: salesforceContactsResponseItem.FirstName + salesforceContactsResponseItem.LastName,
+            fullName: salesforceContactsResponseItem.FirstName +" "+ salesforceContactsResponseItem.LastName,
             phoneNumber: salesforceContactsResponseItem.Phone,
             email: salesforceContactsResponseItem.Email,
             id: salesforceContactsResponseItem.Id
