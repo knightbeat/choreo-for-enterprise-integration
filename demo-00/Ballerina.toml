@@ -1,0 +1,22 @@
+[package]
+org = "chathura"
+name = "demo_00"
+version = "0.1.0"
+distribution = "2201.3.2"
+
+[build-options]
+observabilityIncluded = true
+
+[[dependency]]
+org = "ballerinax"
+name = "mysql"
+version = "1.4.1"
+
+[[dependency]]
+org = "ballerinax"
+name = "salesforce"
+version = "7.2.1"
+
+
+
+
