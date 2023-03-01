@@ -90,7 +90,7 @@ function transform(SalesforceContactsResponse salesforceContactsResponse) return
     numberOfContacts: salesforceContactsResponse.totalSize,
     contacts: from var salesforceContactsResponseItem in salesforceContactsResponse.records
         select {
-            fullName: salesforceContactsResponseItem.FirstName +" "+ salesforceContactsResponseItem.LastName,
+            fullName: salesforceContactsResponseItem.FirstName + " " + salesforceContactsResponseItem.LastName,
             phoneNumber: salesforceContactsResponseItem.Phone,
             email: salesforceContactsResponseItem.Email,
             id: salesforceContactsResponseItem.Id
@@ -101,7 +101,7 @@ function transform(SalesforceContactsResponse salesforceContactsResponse) return
 # bound to port `9090`.
 service / on new http:Listener(9090) {
 
-    resource function post contacts(@http:Payload ContactRequest contactRequest) returns error? {
+    resource function post contacts(@http:Payload ContactRequest contactRequest) returns json|error? {
 
         mysql:Client mysqlEp = check new (
             host = dbConfigContacts.host,
@@ -121,9 +121,13 @@ service / on new http:Listener(9090) {
             error? insertToSalesforceResult = insertToSalesforce(contact, contactRequest.account);
             if insertToSalesforceResult is error {
                 log:printError(insertToSalesforceResult.message());
+                return {status: "error", message: insertToSalesforceResult.message()};
+            }else{
+                return {status: "success"};
             }
         } else {
             io:println(contact);
+            return {status: "error", message: "Error creating contact"};
         }
     }
 
@@ -165,14 +169,14 @@ function insertToSalesforce(Contact contact, string accountId) returns error? {
 function getSalesforceContacts() returns error|ProcessedContactsCollection {
     //string sFontactsResource = "/services/data/v56.0/query?q=SELECT Id,FirstName,LastName,Email,Phone FROM Contact";
 
-    salesforce:Client baseClient = check new (config = {
+    salesforce:Client salesForceClient = check new (config = {
         baseUrl: sfConfig.baseUrl,
         auth: {
             token: sfConfig.token
         }
     });
 
-    salesforce:SoqlResult|salesforce:Error soqlResult = baseClient->getQueryResult("SELECT Id,FirstName,LastName,Email,Phone FROM Contact");
+    salesforce:SoqlResult|salesforce:Error soqlResult = salesForceClient->getQueryResult("SELECT Id,FirstName,LastName,Email,Phone FROM Contact");
 
     if (soqlResult is salesforce:Error) {
         log:printError(msg = soqlResult.message());
