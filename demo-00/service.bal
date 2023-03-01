@@ -23,6 +23,7 @@ type SalesforceConfig record {|
 configurable SalesforceConfig sfConfig = ?;
 configurable DatabaseConfig dbConfigContacts = ?;
 
+// Contact record type to be used with the database records
 type Contact record {
     readonly string contact_id;
     string title;
@@ -32,31 +33,13 @@ type Contact record {
     string email;
 };
 
+// Contact Request record type to be used in the request payload
 type ContactRequest record {
     string account;
     string email;
 };
 
-type SaleasforceResponseContactAttributes record {
-    string 'type;
-    string url;
-};
-
-type SaleasforceResponseContactRecord record {
-    SaleasforceResponseContactAttributes attributes;
-    string Id;
-    string FirstName;
-    string LastName;
-    string Email;
-    string Phone;
-};
-
-type SaleasforceResponseContacts record {
-    int totalSize;
-    boolean done;
-    SaleasforceResponseContactRecord[] records;
-};
-
+// Processed Contact record type for Data Mapping
 type ProcessedContactRecord record {
     string fullName;
     (anydata|string)? phoneNumber;
@@ -64,12 +47,14 @@ type ProcessedContactRecord record {
     string id;
 };
 
+// Processed Contacts Collection record type for Data Mapping
 type ProcessedContactsCollection record {
     int numberOfContacts;
     ProcessedContactRecord[] contacts;
 };
 
-type SalesforceContactResponse record {
+// Salesforce Contact record type for Data Mapping
+type SalesforceContact record {
     record {
         string 'type;
         string url;
@@ -81,10 +66,11 @@ type SalesforceContactResponse record {
     string LastName;
 };
 
+// Salesforce Contact(s) Collection response type for Data Mapping
 type SalesforceContactsResponse record {
     int totalSize;
     boolean done;
-    SalesforceContactResponse[] records;
+    SalesforceContact[] records;
 };
 
 function transform(SalesforceContactsResponse salesforceContactsResponse) returns ProcessedContactsCollection => {
