@@ -97,11 +97,12 @@ function transform(SalesforceContactsResponse salesforceContactsResponse) return
         }
 };
 
+
 # A service representing a network-accessible API
 # bound to port `9090`.
 service / on new http:Listener(9090) {
 
-    resource function post contacts(@http:Payload ContactRequest contactRequest) returns json|error? {
+    resource function post contacts(@http:Payload ContactRequest contactRequest) returns http:Accepted|error? {
 
         mysql:Client mysqlEp = check new (
             host = dbConfigContacts.host,
@@ -121,13 +122,14 @@ service / on new http:Listener(9090) {
             error? insertToSalesforceResult = insertToSalesforce(contact, contactRequest.account);
             if insertToSalesforceResult is error {
                 log:printError(insertToSalesforceResult.message());
-                return {status: "error", message: insertToSalesforceResult.message()};
-            }else{
-                return {status: "success"};
+                return error(insertToSalesforceResult.message());
+            } else {
+                http:Accepted response = {body: {status: "success"}};
+                return response;
             }
         } else {
             io:println(contact);
-            return {status: "error", message: "Error creating contact"};
+            return error("Failed creating contact!");
         }
     }
 
