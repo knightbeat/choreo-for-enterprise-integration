@@ -1,10 +1,11 @@
 import ballerinax/mysql;
 import ballerinax/mysql.driver as _;
 import ballerinax/salesforce;
-import ballerina/log;
 import ballerina/sql;
-import ballerina/io;
 import ballerina/http;
+
+const string RECORD_NOT_FOUND_IN_DB = "The given record was not found in the database";
+const string SALESFORCE_QUERY_FOR_CONTACTS = "SELECT Id,FirstName,LastName,Email,Phone FROM Contact";
 
 type DatabaseConfig record {|
     string host;
@@ -102,46 +103,60 @@ function transform(SalesforceContactsResponse salesforceContactsResponse) return
 # bound to port `9090`.
 service / on new http:Listener(9090) {
 
+    # A resource function to generate a contact record in salesforce.
+    # + contactRequest - The received `ContactRequest` object
+    # + return - Returns an `http:Accepted` or an `error` if there is a failure to serve the request.
     resource function post contacts(@http:Payload ContactRequest contactRequest) returns http:Accepted|error? {
 
-        mysql:Client mysqlEp = check new (
-            host = dbConfigContacts.host,
-        user = dbConfigContacts.user,
-        password = dbConfigContacts.password,
-        database = dbConfigContacts.database,
-        port = dbConfigContacts.port);
+        // retrieve contact details from database
+        Contact|error? dataRecord = retrieveContactsFromDatabase(contactRequest);
 
-        io:println(contactRequest);
-        string email = contactRequest.email;
-
-        sql:ParameterizedQuery query = `select contact_id,title,last_name,first_name,phone,email from contacts where email=${email}`;
-
-        Contact|sql:Error contact = mysqlEp->queryRow(query);
-
-        if (contact is Contact) {
-            error? insertToSalesforceResult = insertToSalesforce(contact, contactRequest.account);
-            if insertToSalesforceResult is error {
-                log:printError(insertToSalesforceResult.message());
-                return error(insertToSalesforceResult.message());
+        if (dataRecord is Contact) {
+            // create contact record in salesforce
+            salesforce:CreationResponse|error? createSalesforceContactResult = createSalesforceContact(dataRecord, contactRequest.account);
+            if createSalesforceContactResult is error {
+                return error(createSalesforceContactResult.message());
             } else {
                 http:Accepted response = {body: {status: "success"}};
                 return response;
             }
-        } else {
-            io:println(contact);
-            return error("Failed creating contact!");
+        }else{
+            return error(RECORD_NOT_FOUND_IN_DB);
         }
     }
 
+    # A resource function to retrieve contacts from salesforce.
+    # + return - Returns a `ProcessedContactsCollection` or an `error` if there is a failure to serve the request.
     resource function get contacts() returns ProcessedContactsCollection|error? {
-        error|ProcessedContactsCollection salesforceContacts = getSalesforceContacts();
+        
+        ProcessedContactsCollection|error? salesforceContacts = fetchSalesforceContacts();
 
         return salesforceContacts;
     }
 
 }
 
-function insertToSalesforce(Contact contact, string accountId) returns error? {
+// function to retrieve contact details from database
+function retrieveContactsFromDatabase(ContactRequest contactRequest) returns Contact|error? {
+    mysql:Client mysqlEp = check new (
+            host = dbConfigContacts.host,
+        user = dbConfigContacts.user,
+        password = dbConfigContacts.password,
+        database = dbConfigContacts.database,
+        port = dbConfigContacts.port);
+
+        //io:println(contactRequest);
+        string email = contactRequest.email;
+
+        sql:ParameterizedQuery query = `select contact_id,title,last_name,first_name,phone,email from contacts where email=${email}`;
+
+        Contact|sql:Error contact = mysqlEp->queryRow(query);
+
+        return contact;
+}
+
+// function to create contact record in salesforce
+function createSalesforceContact(Contact contact, string accountId) returns salesforce:CreationResponse|error? {
     salesforce:Client baseClient = check new (config = {
         baseUrl: sfConfig.baseUrl,
         auth: {
@@ -158,17 +173,13 @@ function insertToSalesforce(Contact contact, string accountId) returns error? {
         "AccountId": accountId
     };
 
-    salesforce:CreationResponse|error res = baseClient->create("Contact", contactRecord);
+    salesforce:CreationResponse|error response = baseClient->create("Contact", contactRecord);
 
-    if res is salesforce:CreationResponse {
-        log:printInfo(res.toJsonString());
-    } else {
-
-        log:printError(msg = res.message());
-    }
+    return response;
 }
 
-function getSalesforceContacts() returns error|ProcessedContactsCollection {
+// function to retrieve contacts from salesforce
+function fetchSalesforceContacts() returns ProcessedContactsCollection|error? {
     //string sFontactsResource = "/services/data/v56.0/query?q=SELECT Id,FirstName,LastName,Email,Phone FROM Contact";
 
     salesforce:Client salesForceClient = check new (config = {
@@ -178,21 +189,20 @@ function getSalesforceContacts() returns error|ProcessedContactsCollection {
         }
     });
 
-    salesforce:SoqlResult|salesforce:Error soqlResult = salesForceClient->getQueryResult("SELECT Id,FirstName,LastName,Email,Phone FROM Contact");
+    salesforce:SoqlResult|salesforce:Error soqlResult = salesForceClient->getQueryResult(SALESFORCE_QUERY_FOR_CONTACTS);
 
-    if (soqlResult is salesforce:Error) {
-        log:printError(msg = soqlResult.message());
-        return error(soqlResult.message());
-    } else {
+    if (soqlResult is salesforce:SoqlResult) {
+
         json results = soqlResult.toJson();
 
-        SalesforceContactsResponse response = check results.cloneWithType(SalesforceContactsResponse);
+        SalesforceContactsResponse salesforceContactsResponse = check results.cloneWithType(SalesforceContactsResponse);
 
-        ProcessedContactsCollection contacts = transform(response);
-
-        io:println(contacts);
+        ProcessedContactsCollection contacts = transform(salesforceContactsResponse);
 
         return contacts;
+        
+    } else {
+        return error(soqlResult.message());
     }
 
 }
