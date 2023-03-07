@@ -4,7 +4,7 @@ name : "CompositeAPI"
 displayName : "CompositeAPI"
 description: "Sample API"
 version: "1.0.0"
-serviceUrl: "https://{MI_HOST}:{MI_PORT}/contacts"
+serviceUrl: "https://{MI_HOST}:{MI_PORT}"
 definitionType: "OAS3"
 securityType: "BASIC"
 mutualSSLEnabled: false

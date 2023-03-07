@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<api context="/contacts" name="CompositeAPI" xmlns="http://ws.apache.org/ns/synapse">
+<api context="/default" name="CompositeAPI" xmlns="http://ws.apache.org/ns/synapse">
     <resource methods="GET" uri-template="/greet/{name}">
         <inSequence>
             <payloadFactory media-type="json">
