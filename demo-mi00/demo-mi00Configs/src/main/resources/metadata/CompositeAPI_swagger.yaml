@@ -4,7 +4,7 @@ info:
   description: API Definition of CompositeAPI
   version: 1.0.0
 servers:
-- url: http://localhost:8290/contacts-management
+- url: http://localhost:8290/contacts
 paths:
   /greet/{name}:
     get:
@@ -12,6 +12,8 @@ paths:
       - name: name
         in: path
         required: true
+        style: simple
+        explode: false
         schema:
           type: string
       responses:
