@@ -1,0 +1,19 @@
+openapi: 3.0.1
+info:
+  title: CompositeAPIwithMI
+  description: API Definition of CompositeAPIwithMI
+  version: 1.0.0
+servers:
+- url: http://localhost:8290/contacts-management
+paths:
+  /greet/{name}:
+    get:
+      parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        default:
+          description: Default response
