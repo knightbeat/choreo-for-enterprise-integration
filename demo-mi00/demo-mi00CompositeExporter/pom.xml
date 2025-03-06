@@ -22,12 +22,6 @@
   <dependencies>
     <dependency>
       <groupId>com.example.metadata</groupId>
-      <artifactId>CompositeAPI_metadata</artifactId>
-      <version>1.0.0</version>
-      <type>yaml</type>
-    </dependency>
-    <dependency>
-      <groupId>com.example.metadata</groupId>
       <artifactId>CompositeAPI_swagger</artifactId>
       <version>1.0.0</version>
       <type>yaml</type>
@@ -37,6 +31,12 @@
       <artifactId>CompositeAPI</artifactId>
       <version>1.0.0</version>
       <type>xml</type>
+    </dependency>
+    <dependency>
+      <groupId>com.example.metadata</groupId>
+      <artifactId>CompositeAPI_metadata</artifactId>
+      <version>1.0.0</version>
+      <type>yaml</type>
     </dependency>
   </dependencies>
   <repositories>

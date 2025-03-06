@@ -13,4 +13,36 @@
         <outSequence/>
         <faultSequence/>
     </resource>
+    <resource methods="GET" uri-template="/items/{item}">
+        <inSequence>
+            <property name="" scope="default" type="STRING" value=""/>
+            <payloadFactory media-type="xml">
+                <format>
+                    <inline xmlns=""/>
+                </format>
+                <args/>
+            </payloadFactory>
+            <call>
+                <endpoint>
+                    <address uri="http://www.example.org/service">
+                        <suspendOnFailure>
+                            <initialDuration>-1</initialDuration>
+                            <progressionFactor>-1</progressionFactor>
+                            <maximumDuration>0</maximumDuration>
+                        </suspendOnFailure>
+                        <markForSuspension>
+                            <retriesBeforeSuspension>0</retriesBeforeSuspension>
+                        </markForSuspension>
+                    </address>
+                </endpoint>
+            </call>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+    <resource methods="GET">
+        <inSequence/>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
 </api>
