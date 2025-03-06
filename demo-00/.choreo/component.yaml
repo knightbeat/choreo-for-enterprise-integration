@@ -1,0 +1,13 @@
+schemaVersion: 1.1
+endpoints:
+  - name: demo-00
+    service:
+      port: 8080
+      basePath: /
+    type: REST
+    displayName: demo-00
+    networkVisibilities:
+      - Public
+      - Project
+      - Organization
+    schemaFilePath: swagger.yaml

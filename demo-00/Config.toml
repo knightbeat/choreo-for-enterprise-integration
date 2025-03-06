@@ -1,0 +1,11 @@
+[sfConfig]
+baseUrl = "https://demoteam-dev-ed.my.salesforce.com"
+token = "00D8d000001GOWT!AQcAQAsH.zv_wrQx8aQWzTzYzy8l74yQBD00rnRYokkuTWpA1rI8n_lWMkrTAz7h0maHa2L.IVS4Aued337dpYbRkiTloq_Q"
+
+[dbConfigContacts]
+host = ""
+port = 0
+user = "root"
+password = "root"
+database = "choreobase"
+

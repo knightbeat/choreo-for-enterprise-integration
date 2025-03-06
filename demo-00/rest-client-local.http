@@ -1,0 +1,93 @@
+### YOUR SALESFORCE CREDENTIALS TO GENERATE AN ACCESS TOKEN
+@sf_user=chathura@demoteam.com
+@sf_password=zk1853HSb
+@sf_client_id=3MVG9DREgiBqN9Wlh1HoYTn9kLbIpv4uQUidmMHDfOS87X5X_enMVsfr.RWcolYLP2HnQkn3kzzjo1Btx3P8D
+@sf_client_secret=890ECA0F1E15C7996897DCC1F194785F7906D33634C9327078FEEEE3FA7548FD
+
+
+
+
+
+
+
+
+### GENERATES AN ACCESS TOKEN
+# @name createToken
+POST https://login.salesforce.com/services/oauth2/token 
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{sf_client_id}}&client_secret={{sf_client_secret}}&username={{sf_user}}&password={{sf_password}}
+
+### PRESERVES THE SALESFORCE ACCESS TOKEN IN THE REST CLIENT CONTEXT
+@sf_token={{createToken.response.body.access_token}}
+
+### PRESERVES YOUR SALESFORCE INSTANCE URL IN THE REST CLIENT CONTEXT
+@sf_instance_url={{createToken.response.body.instance_url}}
+
+### CHECKS THE AVAILABLE API VERSIONS. PICK THE LASTEST AND SET @sf_api_version=56.0 BELOW ACCORDINGLY
+GET {{sf_instance_url}}/services/data
+Authorization: Bearer {{sf_token}}
+
+### SALESFORCE API VERSION OF YOUR CHOICE
+@sf_api_version=57.0
+
+### CREATE AN ACCOUNT OBJECT IN SALESFORCE RECORDS
+# @name createAccount
+POST {{sf_instance_url}}/services/data/v{{sf_api_version}}/sobjects/Account
+Content-Type: application/json
+Authorization: Bearer {{sf_token}}
+
+{
+    "Name":"WSO2 Choreo Demo"
+}
+
+### PRESERVES THE ACCOUNT ID OF THE CREATED ACCOUNT
+@sf_account_id={{createAccount.response.body.$.id}}
+
+### CREATE A CONTACT OBJECT IN SALESFORCE RECORDS UNDER THE PREVIOUSLY CREATED ACCOUNT
+POST {{sf_instance_url}}/services/data/v{{sf_api_version}}/sobjects/Contact
+Content-Type: application/json
+Authorization: Bearer {{sf_token}}
+
+{
+    "FirstName": "Jessy",
+    "LastName": "Pinkman",
+    "AccountId": "{{sf_account_id}}",
+    "Title": "Mr",
+    "Email": "jessey@demoteam.com",
+    "Phone": "+447428254632"
+}
+
+### DEMO
+
+@choreoUrl = http://localhost:9090
+
+### https://b48cc93e-fa33-4420-a155-bc653b4d46be-dev.e1-eu-north-azure.choreoapis.dev/glcd/composite-api/1.0.0
+@choreoKey = eyJ4NXQiOiJaVEF6T1RGa1kyWTJaV1ZsTVRsa1l6ZzJNV0V6WkRKaFpUWmhNVFE1TnpSaE1EUTBNemxtWlRjMFpUQXpZMkl3TVdSbU5UUTJNVFJrTUdRd09ETTNZZyIsImtpZCI6IlpUQXpPVEZrWTJZMlpXVmxNVGxrWXpnMk1XRXpaREpoWlRaaE1UUTVOelJoTURRME16bG1aVGMwWlRBelkySXdNV1JtTlRRMk1UUmtNR1F3T0RNM1lnX1JTMjU2IiwidHlwIjoiYXQrand0IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiJkMjEyMmU4Mi0xZDdlLTQ2OGEtOTljOC0xN2NhNzJlMzEzMjEiLCJhdXQiOiJBUFBMSUNBVElPTiIsImF1ZCI6ImlJaWVWcVBGZ21maW1pVjhNRHpWcEdWNzRqOGEiLCJuYmYiOjE2Nzc2NjU0NzEsImF6cCI6ImlJaWVWcVBGZ21maW1pVjhNRHpWcEdWNzRqOGEiLCJpc3MiOiJodHRwczpcL1wvYXBpLmFzZ2FyZGVvLmlvXC90XC93c28yc2FcL29hdXRoMlwvdG9rZW4iLCJleHAiOjE2Nzc2NjkwNzEsImlhdCI6MTY3NzY2NTQ3MSwianRpIjoiMGI5ZDRjZWQtNDE5Yy00NzJkLWEyM2MtNzkwYmQzY2MwOTVkIiwiY2xpZW50X2lkIjoiaUlpZVZxUEZnbWZpbWlWOE1EelZwR1Y3NGo4YSJ9.dSLlZ5Jkc6NbCTLdZJm3E5uHBY8BIYEXC6YJvbor_w4idaR6FtEQ5sJSzv5A0v5H7TO9JuhtV7kY764_xGyQSd_aiYqKdpEcev2jawL0jK1hml5Fkv0THgoykt49tatfcgbIxqvnk7qiyx0Eg11CYh20fNwBqF7wBkbC838srQrgDGp0rkf0zj6BpHkkB8qOdbJKrscEupt76Nr1Te7IPyxbRxjZ2VBr5sx0c4KT3Bc4tP054AmU4uA1Acue-GUyK1BkiS0hfD_S8LPLWsKXRz46sxh6JEFX9L0zOFWrCQMNDbYJRyNM9i3KnRx8zkb7zEb2D4SEIOtcpTR4LV_pSg
+### NOW SHOW HOW CHOREO CREATES A SIMILAR ACCOUNT BY READING USER DETAILS FROM A DATABASE
+POST {{choreoUrl}}/contacts
+Content-Type: application/json
+API-Key: {{choreoKey}}
+
+{
+    "email": "john@demoteam.com",
+    "account": "0018d00000PMp4MAAT"
+}
+
+### LIST ALL EXISTING CONTACTS IN SALESFORCE
+GET {{sf_instance_url}}/services/data/v{{sf_api_version}}/sobjects/Contact
+Authorization: Bearer {{sf_token}}
+
+### LIST ALL EXISTING CONTACTS IN SALESFORCE BY QUERY
+GET {{sf_instance_url}}/services/data/v{{sf_api_version}}/query?q=SELECT Id,FirstName,LastName,Email,Phone FROM Contact
+Content-Type: application/json
+Authorization: Bearer {{sf_token}}
+
+### DEMO
+### NOW SHOW HOW CHOREO READS THE SAME AND TRANSFORMS USING THE DATA MAPPER
+GET {{choreoUrl}}/contacts
+API-Key: {{choreoKey}}
+
+### DEMO
+### NOW SHOW HOW CHOREO READS THE SAME AND TRANSFORMS USING THE DATA MAPPER
+GET http://localhost:9090/contacts
