@@ -1,0 +1,37 @@
+<api xmlns="http://ws.apache.org/ns/synapse" name="composite" context="/composite">
+    <!-- Resource for /greeting -->
+    <resource methods="GET" uri-template="/greeting">
+        <inSequence>
+            <payloadFactory media-type="json">
+                <format>{"message": "hello stranger"}</format>
+                <args/>
+            </payloadFactory>
+            <respond/>
+        </inSequence>
+    </resource>
+    <!-- Resource for /greeting/{name} -->
+    <resource methods="GET" uri-template="/greeting/{name}">
+        <inSequence>
+            <property name="uri.var.name" expression="get-property('uri.var.name')" scope="default" type="STRING"/>
+            <payloadFactory media-type="json">
+                <format>{"message": "hello $1"}</format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('uri.var.name')"/>
+                </args>
+            </payloadFactory>
+            <respond/>
+        </inSequence>
+    </resource>
+    <!-- New Resource for /customer/{id} -->
+    <resource methods="GET" uri-template="/customer/{id}">
+        <inSequence>
+            <property name="uri.var.customerId" expression="get-property('uri.var.id')" scope="default" type="STRING"/>
+            <call>
+                <endpoint>
+                    <http method="GET" uri-template="http://localhost:8080/cdp/customers/{uri.var.customerId}"/>
+                </endpoint>
+            </call>
+            <respond/>
+        </inSequence>
+    </resource>
+</api>
